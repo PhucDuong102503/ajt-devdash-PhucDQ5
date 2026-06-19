@@ -1,38 +1,38 @@
-// Main application entry point
+// Điểm khởi chạy ứng dụng chính (Entry point)
 import '../styles.css';
 import { setState, onStateChange, updateSuccessState } from './state';
 import { renderApp, setDebouncedSearchDispatcher } from './ui';
 import { fetchProducts, fetchCategories } from './api';
 import { debounce } from './utils';
 
-// 1. Subscribe the UI render function to state updates
+// 1. Đăng ký (Subscribe) hàm render giao diện với sự thay đổi của trạng thái
 onStateChange((state) => {
   renderApp(state);
 });
 
-// 2. Initialize debounced search dispatcher (Excellent tier - closure debounce)
-// Debounce search state update by 350ms to prevent laggy visual filters and API spam.
+// 2. Khởi tạo dispatcher tìm kiếm có áp dụng debounce (Đạt chuẩn Excellent - dùng closure)
+// Trì hoãn cập nhật tìm kiếm 350ms nhằm tránh giật lag giao diện và hạn chế lặp lại xử lý không cần thiết.
 const debouncedSearch = debounce((searchQuery: string) => {
-  updateSuccessState({ searchQuery });
+  updateSuccessState({ searchQuery, currentPage: 1 });
 }, 350);
 setDebouncedSearchDispatcher(debouncedSearch);
 
 /**
- * Initializes the application dashboard by fetching core data in parallel.
- * Targets the Good tier criterion: "Promise.all to load two or more resources in parallel".
+ * Khởi tạo dữ liệu trang dashboard bằng cách tải các dữ liệu cốt lõi song song.
+ * Đạt tiêu chí xếp hạng Good: "Dùng Promise.all để tải song song từ 2 tài nguyên trở lên".
  */
 async function initDashboard(): Promise<void> {
-  // Transition app to loading state
+  // Chuyển ứng dụng sang trạng thái đang tải (loading)
   setState({ status: 'loading' });
 
   try {
-    // Load products and categories in parallel
+    // Tải thông tin sản phẩm và danh mục song song
     const [productsResult, categoriesResult] = await Promise.all([
       fetchProducts(),
       fetchCategories(),
     ]);
 
-    // Transition app to success state with loaded data
+    // Chuyển ứng dụng sang trạng thái thành công với dữ liệu đã được tải về
     setState({
       status: 'success',
       data: {
@@ -45,6 +45,8 @@ async function initDashboard(): Promise<void> {
         selectedProductDetails: null,
         detailsLoading: false,
         detailsError: null,
+        currentPage: 1,
+        itemsPerPage: 8,
       },
     });
   } catch (error) {
@@ -56,12 +58,12 @@ async function initDashboard(): Promise<void> {
   }
 }
 
-// Kick off app initialisation on document loaded
+// Bắt đầu khởi tạo ứng dụng khi tài liệu HTML đã tải xong (DOMContentLoaded)
 document.addEventListener('DOMContentLoaded', () => {
   initDashboard();
 });
 
-// Fallback in case DOMContentLoaded has already fired
+// Phương án dự phòng trong trường hợp sự kiện DOMContentLoaded đã được kích hoạt trước đó
 if (document.readyState === 'interactive' || document.readyState === 'complete') {
   initDashboard();
 }

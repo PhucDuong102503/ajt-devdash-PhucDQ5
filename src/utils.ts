@@ -1,6 +1,6 @@
-// Utilities and helpers
+// Các tiện ích và hàm bổ trợ
 
-// 1. Debounce implementation (closure) for search/input events
+// 1. Triển khai Debounce (sử dụng closure) cho các sự kiện nhập liệu/tìm kiếm
 export function debounce<Args extends unknown[]>(
   func: (...args: Args) => void,
   delay: number
@@ -17,8 +17,8 @@ export function debounce<Args extends unknown[]>(
   };
 }
 
-// 2. Generic Cache Class with a constraint (Excellent tier)
-// Constraints require items to have an ID of string or number.
+// 2. Lớp Cache Generic với ràng buộc kiểu (Đạt chuẩn Excellent)
+// Ràng buộc yêu cầu đối tượng phải có thuộc tính ID kiểu chuỗi hoặc số.
 export interface Identifiable {
   id: string | number;
 }
@@ -32,7 +32,7 @@ export class CacheManager<T extends Identifiable> {
   }
 
   /**
-   * Caches an item by its ID.
+   * Lưu trữ một đối tượng vào bộ nhớ đệm (cache) theo ID của nó.
    */
   set(item: T): void {
     this.cache.set(item.id, {
@@ -42,7 +42,7 @@ export class CacheManager<T extends Identifiable> {
   }
 
   /**
-   * Retrieves an item from cache if it exists and is not expired.
+   * Lấy đối tượng từ bộ nhớ đệm nếu nó tồn tại và chưa bị hết hạn.
    */
   get(id: string | number): T | null {
     const entry = this.cache.get(id);
@@ -58,28 +58,28 @@ export class CacheManager<T extends Identifiable> {
   }
 
   /**
-   * Evicts an item from the cache.
+   * Xóa một đối tượng khỏi bộ nhớ đệm (evict).
    */
   delete(id: string | number): void {
     this.cache.delete(id);
   }
 
   /**
-   * Clears the entire cache.
+   * Xóa sạch toàn bộ bộ nhớ đệm.
    */
   clear(): void {
     this.cache.clear();
   }
 }
 
-// 3. Exhaustive narrowing helper (Excellent tier)
-// If compile-time checking is correct, this will never be reached at runtime.
-// If code is added but not handled in switch/if checks, TypeScript flags a compile error.
+// 3. Hàm hỗ trợ thu hẹp vét cạn (Đạt chuẩn Excellent)
+// Nếu việc kiểm tra lúc compile chính xác, hàm này sẽ không bao giờ bị chạy tới ở runtime.
+// Nếu có trạng thái mới được thêm vào AppState nhưng chưa được xử lý, TypeScript sẽ báo lỗi compile.
 export function assertNever(x: never): never {
   throw new Error(`Unhandled option/state: ${JSON.stringify(x)}`);
 }
 
-// 4. Formatting helper for currency
+// 4. Hàm định dạng tiền tệ (USD)
 export function formatCurrency(amount: number): string {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',

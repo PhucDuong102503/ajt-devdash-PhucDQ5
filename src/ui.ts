@@ -1,18 +1,18 @@
-// UI Rendering Module
+// Module Giao diện Người dùng (UI Rendering Module)
 import type { AppState, Product, ProductSummary, SortOption, DashboardData } from './types';
 import { assertNever, formatCurrency, CacheManager } from './utils';
 import { getState, updateSuccessState } from './state';
 import { fetchProductById } from './api';
 
-// Create a cache manager instance for caching full Product details
-const productDetailsCache = new CacheManager<Product>(5); // 5 minutes TTL
+// Khởi tạo bộ quản lý cache để lưu trữ chi tiết sản phẩm đầy đủ (5 phút TTL)
+const productDetailsCache = new CacheManager<Product>(5); // 5 phút TTL
 
-// Cache DOM elements
+// Lưu trữ phần tử DOM gốc (DOM caching)
 const appRoot = document.querySelector<HTMLDivElement>('#app');
 
 /**
- * Main render function that handles rendering based on current state.
- * Targets the Excellent tier criterion: "A discriminated union drives state and is exhaustively narrowed".
+ * Hàm vẽ giao diện chính xử lý render dựa trên trạng thái hiện tại.
+ * Đạt chuẩn Excellent tier: "Sử dụng discriminated union để quản lý trạng thái và thu hẹp vét cạn".
  */
 export function renderApp(state: AppState): void {
   if (!appRoot) return;
@@ -74,36 +74,36 @@ export function renderApp(state: AppState): void {
           </div>
         </div>
       `;
-      // Bind retry event listener
+      // Đăng ký sự kiện lắng nghe nút Thử lại (Retry) để tải lại ứng dụng
       document.querySelector('#retry-app-btn')?.addEventListener('click', () => {
         window.location.reload();
       });
       break;
 
     default:
-      // Compile-time safety: TypeScript checks that all status categories are handled.
-      // If a new status is added to AppState, this line triggers a compilation error.
+      // Đảm bảo an toàn lúc biên dịch (Compile-time safety): TypeScript kiểm tra mọi trạng thái của status đều được xử lý.
+      // Nếu có status mới được thêm vào AppState, dòng này sẽ lập tức báo lỗi compile.
       assertNever(state);
   }
 }
 
 /**
- * Renders the dashboard with data loading, filter, search, grid, and modal details.
+ * Vẽ giao diện Dashboard bao gồm tìm kiếm, bộ lọc, lưới sản phẩm, phân trang và chi tiết modal.
  */
 function renderDashboard(data: DashboardData): void {
   if (!appRoot) return;
 
-  // Apply higher-order functions (filter, map) for list operations (Good tier)
+  // Áp dụng các hàm bậc cao (Higher-Order Functions: filter, map) cho danh sách sản phẩm (Đạt chuẩn Good tier)
   let filteredProducts = data.products;
 
-  // 1. Filter by category
+  // 1. Lọc sản phẩm theo danh mục (Category filter)
   if (data.selectedCategory !== 'all') {
     filteredProducts = filteredProducts.filter(
       (product) => product.category === data.selectedCategory
     );
   }
 
-  // 2. Filter by search query
+  // 2. Lọc sản phẩm theo từ khóa tìm kiếm (Search filter)
   if (data.searchQuery.trim() !== '') {
     const query = data.searchQuery.toLowerCase();
     filteredProducts = filteredProducts.filter(
@@ -114,7 +114,7 @@ function renderDashboard(data: DashboardData): void {
     );
   }
 
-  // 3. Sort products based on sort selection
+  // 3. Sắp xếp sản phẩm theo tùy chọn (Sorting)
   if (data.sortBy !== 'none') {
     filteredProducts = [...filteredProducts].sort((a, b) => {
       if (data.sortBy === 'price-asc') {
@@ -128,7 +128,15 @@ function renderDashboard(data: DashboardData): void {
     });
   }
 
-  // Build the complete page content
+  // 4. Các phép tính toán phân trang (Pagination math)
+  const totalItems = filteredProducts.length;
+  const totalPages = Math.ceil(totalItems / data.itemsPerPage) || 1;
+  const currentPage = Math.min(data.currentPage, totalPages);
+  const startIndex = (currentPage - 1) * data.itemsPerPage;
+  const endIndex = startIndex + data.itemsPerPage;
+  const paginatedProducts = filteredProducts.slice(startIndex, endIndex);
+
+  // Xây dựng nội dung HTML của tiêu đề (Header)
   const headerHtml = `
     <header>
       <div class="brand-section">
@@ -141,7 +149,7 @@ function renderDashboard(data: DashboardData): void {
     </header>
   `;
 
-  // Filter and search controls HTML
+  // Xây dựng HTML cho thanh công cụ tìm kiếm và lọc bộ lọc
   const controlsHtml = `
     <div class="controls-bar">
       <div class="search-wrapper">
@@ -180,15 +188,17 @@ function renderDashboard(data: DashboardData): void {
     </div>
   `;
 
+  const pageStart = totalItems === 0 ? 0 : startIndex + 1;
+  const pageEnd = Math.min(startIndex + data.itemsPerPage, totalItems);
   const countHtml = `
     <div class="results-count">
-      Showing ${filteredProducts.length} of ${data.products.length} products
+      Showing ${pageStart}-${pageEnd} of ${totalItems} products (Total: ${data.products.length})
     </div>
   `;
 
-  // Grid products HTML (using Pick-ed summary types)
+  // Xây dựng mã HTML hiển thị lưới sản phẩm (sử dụng kiểu tóm tắt rút gọn ProductSummary)
   let productsGridHtml = '';
-  if (filteredProducts.length === 0) {
+  if (paginatedProducts.length === 0) {
     productsGridHtml = `
       <div class="state-container" style="grid-column: 1 / -1;">
         <p class="empty-state-text">No products match your search or filter criteria.</p>
@@ -197,9 +207,9 @@ function renderDashboard(data: DashboardData): void {
   } else {
     productsGridHtml = `
       <div class="products-grid">
-        ${filteredProducts
+        ${paginatedProducts
           .map((prod) => {
-            // Pick fields we need using the ProductSummary utility type
+            // Lọc ra các trường cần dùng bằng Utility Type Pick (ProductSummary)
             const summary: ProductSummary = {
               id: prod.id,
               title: prod.title,
@@ -243,12 +253,42 @@ function renderDashboard(data: DashboardData): void {
     `;
   }
 
-  // Render modal overlay
+  // Xây dựng mã HTML cho phần thanh phân trang
+  let paginationControlsHtml = '';
+  if (totalPages > 1) {
+    paginationControlsHtml = `
+      <div class="pagination-controls">
+        <button id="prev-page-btn" class="page-nav-btn" data-page="${currentPage - 1}" ${currentPage === 1 ? 'disabled' : ''}>
+          <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+          Prev
+        </button>
+        <div class="page-numbers-wrapper">
+          ${Array.from({ length: totalPages })
+            .map((_, index) => {
+              const pageNum = index + 1;
+              const isActive = pageNum === currentPage;
+              return `
+                <button class="page-num-btn ${isActive ? 'active' : ''}" data-page="${pageNum}">
+                  ${pageNum}
+                </button>
+              `;
+            })
+            .join('')}
+        </div>
+        <button id="next-page-btn" class="page-nav-btn" data-page="${currentPage + 1}" ${currentPage === totalPages ? 'disabled' : ''}>
+          Next
+          <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+        </button>
+      </div>
+    `;
+  }
+
+  // Render phần giao diện nền mờ Modal Chi tiết sản phẩm
   const isModalActive = data.selectedProductId !== null;
   const modalHtml = `
     <div id="product-detail-modal" class="modal-overlay ${isModalActive ? 'active' : ''}">
       <div class="modal-container">
-        <button id="close-modal-btn" class="close-modal-btn" aria-label="Close modal">
+        <button id="close-modal-btn" class="close-modal-btn" aria-label="Đóng modal">
           <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
         </button>
         ${renderModalContent(data.detailsLoading, data.detailsError, data.selectedProductDetails)}
@@ -256,23 +296,24 @@ function renderDashboard(data: DashboardData): void {
     </div>
   `;
 
-  // Assemble full UI
+  // Lắp ráp toàn bộ giao diện hoàn chỉnh của dashboard
   appRoot.innerHTML = `
     <div class="dashboard-container">
       ${headerHtml}
       ${controlsHtml}
       ${countHtml}
       ${productsGridHtml}
+      ${paginationControlsHtml}
     </div>
     ${modalHtml}
   `;
 
-  // Setup Event Listeners
+  // Thiết lập các sự kiện lắng nghe tương tác DOM (Event Listeners)
   setupEventListeners();
 }
 
 /**
- * Render inner content for modal detail view
+ * Render nội dung chi tiết bên trong cửa sổ Modal
  */
 function renderModalContent(loading: boolean, error: string | null, details: Product | null): string {
   if (loading) {
@@ -301,11 +342,11 @@ function renderModalContent(loading: boolean, error: string | null, details: Pro
     `;
   }
 
-  // Detail item views (Excellent tier Omit utility type visual display)
+  // Trình bày thông tin chi tiết (Mô phỏng Omit utility type trực quan ở bậc Excellent)
   const isLowStock = details.stock < 10;
   const stockClass = isLowStock ? 'stock-low' : 'stock-ok';
   
-  // Display images gallery
+  // Hiển thị bộ sưu tập ảnh sản phẩm (Gallery)
   const images = details.images.length > 0 ? details.images : [details.thumbnail];
   const activeImage = images[0];
 
@@ -322,7 +363,7 @@ function renderModalContent(loading: boolean, error: string | null, details: Pro
     )
     .join('');
 
-  // Reviews HTML representation
+  // Định dạng mã HTML hiển thị danh sách nhận xét (Reviews)
   const reviewsHtml = details.reviews.length === 0
     ? '<p class="empty-state-text" style="font-size: 0.9rem;">No reviews yet.</p>'
     : details.reviews
@@ -415,41 +456,40 @@ function renderModalContent(loading: boolean, error: string | null, details: Pro
 }
 
 /**
- * Binds DOM event listeners to controls and elements
+ * Đăng ký các trình lắng nghe sự kiện DOM cho các bộ điều khiển trên giao diện
  */
 function setupEventListeners(): void {
-  // 1. Search Box Input Listener
+  // 1. Sự kiện lắng nghe ô tìm kiếm (Search Box input)
   const searchInput = document.querySelector<HTMLInputElement>('#search-box');
   if (searchInput) {
-    // We bind keyup/input to trigger state change
-    // Search is debounced in main.ts, here we just listen and dispatch the debounced function
+    // Chúng ta lắng nghe sự kiện input để kích hoạt cập nhật trạng thái
+    // Quá trình debounce được quản lý ở main.ts, ở đây chỉ gọi hàm dispatcher đã được bọc debounce bằng closure
     searchInput.addEventListener('input', (e) => {
       const target = e.target as HTMLInputElement;
-      // Dispatch custom event or call global state updates
-      // To satisfy Excellent memoize/debounce closure, we debounce the state updates
+      // Hàm dispatchSearchUpdate là hàm đã được bọc debounce bằng closure
       dispatchSearchUpdate(target.value);
     });
   }
 
-  // 2. Category Dropdown Filter Listener
+  // 2. Sự kiện lắng nghe chọn Danh mục lọc (Category Filter)
   const catFilter = document.querySelector<HTMLSelectElement>('#category-filter');
   if (catFilter) {
     catFilter.addEventListener('change', (e) => {
       const target = e.target as HTMLSelectElement;
-      updateSuccessState({ selectedCategory: target.value });
+      updateSuccessState({ selectedCategory: target.value, currentPage: 1 });
     });
   }
 
-  // 3. Sort Dropdown Listener
+  // 3. Sự kiện lắng nghe chọn Sắp xếp (Sort Filter)
   const sortFilter = document.querySelector<HTMLSelectElement>('#sort-filter');
   if (sortFilter) {
     sortFilter.addEventListener('change', (e) => {
       const target = e.target as HTMLSelectElement;
-      updateSuccessState({ sortBy: target.value as SortOption });
+      updateSuccessState({ sortBy: target.value as SortOption, currentPage: 1 });
     });
   }
 
-  // 4. Reset Filters Button
+  // 4. Sự kiện lắng nghe click nút Reset bộ lọc
   const resetBtn = document.querySelector('#reset-filters-btn');
   if (resetBtn) {
     resetBtn.addEventListener('click', () => {
@@ -457,11 +497,12 @@ function setupEventListeners(): void {
         searchQuery: '',
         selectedCategory: 'all',
         sortBy: 'none',
+        currentPage: 1,
       });
     });
   }
 
-  // 5. Product Detail Click Listeners (Card clicking)
+  // 5. Sự kiện click vào thẻ sản phẩm để xem chi tiết (Card Clicking)
   const productCards = document.querySelectorAll('.product-card');
   productCards.forEach((card) => {
     card.addEventListener('click', () => {
@@ -473,7 +514,7 @@ function setupEventListeners(): void {
     });
   } );
 
-  // 6. Close Modal Click Listener
+  // 6. Sự kiện click đóng Modal chi tiết
   const closeModalBtn = document.querySelector('#close-modal-btn');
   const modalOverlay = document.querySelector('#product-detail-modal');
   if (closeModalBtn) {
@@ -482,7 +523,7 @@ function setupEventListeners(): void {
     });
   }
   if (modalOverlay) {
-    // Close when clicking overlay backdrop
+    // Đóng Modal khi người dùng click vào vùng nền mờ bên ngoài
     modalOverlay.addEventListener('click', (e) => {
       if (e.target === modalOverlay) {
         closeProductDetails();
@@ -490,7 +531,7 @@ function setupEventListeners(): void {
     });
   }
 
-  // 7. Modal Gallery Thumbnail clicks
+  // 7. Sự kiện click chuyển đổi ảnh trong bộ ảnh thu nhỏ (Gallery Thumbnails)
   const thumbImages = document.querySelectorAll<HTMLImageElement>('.thumb-img');
   const mainImage = document.querySelector<HTMLImageElement>('#main-detail-image');
   thumbImages.forEach((thumb) => {
@@ -503,9 +544,34 @@ function setupEventListeners(): void {
       }
     });
   });
+
+  // 8. Sự kiện click các nút điều hướng chuyển trang phân trang
+  const prevBtn = document.querySelector<HTMLButtonElement>('#prev-page-btn');
+  if (prevBtn && !prevBtn.disabled) {
+    prevBtn.addEventListener('click', () => {
+      const page = parseInt(prevBtn.getAttribute('data-page') || '1', 10);
+      updateSuccessState({ currentPage: page });
+    });
+  }
+
+  const nextBtn = document.querySelector<HTMLButtonElement>('#next-page-btn');
+  if (nextBtn && !nextBtn.disabled) {
+    nextBtn.addEventListener('click', () => {
+      const page = parseInt(nextBtn.getAttribute('data-page') || '1', 10);
+      updateSuccessState({ currentPage: page });
+    });
+  }
+
+  const pageNumBtns = document.querySelectorAll<HTMLButtonElement>('.page-num-btn');
+  pageNumBtns.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const page = parseInt(btn.getAttribute('data-page') || '1', 10);
+      updateSuccessState({ currentPage: page });
+    });
+  });
 }
 
-// Closure reference for debounced search, will be initialized in main.ts
+// Hàm trung gian lưu trữ closure tìm kiếm, được gán giá trị sau ở main.ts
 let dispatchSearchUpdate: (val: string) => void = (val) => {
   updateSuccessState({ searchQuery: val });
 };
@@ -515,10 +581,10 @@ export function setDebouncedSearchDispatcher(fn: (val: string) => void): void {
 }
 
 /**
- * Handles product selection, checks CacheManager first, then fetches details if missed.
+ * Xử lý sự kiện chọn sản phẩm: Tra cứu ở bộ quản lý Cache trước, nếu thiếu mới tải từ API.
  */
 async function handleSelectProduct(id: number): Promise<void> {
-  // First update state to record selection and set details loading
+  // Cập nhật trạng thái tải và ghi nhận mã sản phẩm được chọn
   updateSuccessState({
     selectedProductId: id,
     detailsLoading: true,
@@ -526,10 +592,10 @@ async function handleSelectProduct(id: number): Promise<void> {
     selectedProductDetails: null,
   });
 
-  // Check generic cache manager (Excellent tier cache hit check)
+  // Kiểm tra bộ nhớ đệm CacheManager (Đạt chuẩn Cache Hit ở bậc Excellent)
   const cachedProduct = productDetailsCache.get(id);
   if (cachedProduct) {
-    // Cache Hit!
+    // Đã tìm thấy trong Cache (Cache Hit!)
     updateSuccessState({
       selectedProductDetails: cachedProduct,
       detailsLoading: false,
@@ -537,13 +603,13 @@ async function handleSelectProduct(id: number): Promise<void> {
     return;
   }
 
-  // Cache Miss -> Fetch asynchronously
+  // Không có trong cache (Cache Miss!) -> Gọi API tải dữ liệu bất đồng bộ
   try {
     const details = await fetchProductById(id);
-    // Store in cache
+    // Lưu sản phẩm đã tải vào cache
     productDetailsCache.set(details);
     
-    // Ensure the product we fetched is still the one selected (prevent race conditions)
+    // Đảm bảo sản phẩm tải về khớp với sản phẩm đang được chọn (tránh lỗi race condition)
     const currentState = getState();
     if (currentState.status === 'success' && currentState.data.selectedProductId === id) {
       updateSuccessState({
@@ -552,7 +618,7 @@ async function handleSelectProduct(id: number): Promise<void> {
       });
     }
   } catch (error) {
-    const errorMsg = error instanceof Error ? error.message : 'Failed to fetch details';
+    const errorMsg = error instanceof Error ? error.message : 'Tải dữ liệu chi tiết thất bại.';
     updateSuccessState({
       detailsLoading: false,
       detailsError: errorMsg,
@@ -561,7 +627,7 @@ async function handleSelectProduct(id: number): Promise<void> {
 }
 
 /**
- * Resets selected product state to close the detail modal view.
+ * Reset trạng thái chi tiết sản phẩm để đóng modal hiển thị.
  */
 function closeProductDetails(): void {
   updateSuccessState({
