@@ -1,21 +1,21 @@
-// Application State Management
+// Quản lý Trạng thái Ứng dụng (State Management)
 import type { AppState, DashboardDataUpdate } from './types';
 
-// Initial state is idle
+// Trạng thái ban đầu là idle
 let appState: AppState = { status: 'idle' };
 
 type StateChangeListener = (state: AppState) => void;
 const listeners: StateChangeListener[] = [];
 
 /**
- * Returns the current application state.
+ * Trả về trạng thái ứng dụng hiện tại.
  */
 export function getState(): AppState {
   return appState;
 }
 
 /**
- * Updates the state and notifies all registered listeners.
+ * Cập nhật trạng thái và thông báo cho tất cả listener đã đăng ký.
  */
 export function setState(newState: AppState): void {
   appState = newState;
@@ -23,7 +23,7 @@ export function setState(newState: AppState): void {
 }
 
 /**
- * Helper to update only successful dashboard state fields when current status is 'success'.
+ * Hàm bổ trợ để chỉ cập nhật một phần dữ liệu dashboard khi trạng thái hiện tại là 'success'.
  */
 export function updateSuccessState(update: DashboardDataUpdate): void {
   if (appState.status === 'success') {
@@ -39,7 +39,7 @@ export function updateSuccessState(update: DashboardDataUpdate): void {
 }
 
 /**
- * Registers a callback listener to execute when state changes.
+ * Đăng ký một callback listener để chạy khi trạng thái thay đổi.
  */
 export function onStateChange(listener: StateChangeListener): void {
   listeners.push(listener);

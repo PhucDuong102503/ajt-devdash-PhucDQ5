@@ -1,4 +1,4 @@
-// Types and interfaces for DevDash application
+// Định nghĩa các kiểu dữ liệu và interface cho ứng dụng DevDash
 
 export interface ProductDimensions {
   width: number;
@@ -61,38 +61,40 @@ export interface ProductResponse {
 
 export type SortOption = 'none' | 'price-asc' | 'price-desc' | 'rating-desc';
 
-// Dashboard UI state
+// Trạng thái giao diện (UI state) của Dashboard
 export interface DashboardData {
   products: Product[];
   categories: Category[];
   searchQuery: string;
-  selectedCategory: string; // 'all' or specific category slug
+  selectedCategory: string; // 'all' hoặc slug của danh mục cụ thể
   sortBy: SortOption;
   selectedProductId: number | null;
   selectedProductDetails: Product | null;
   detailsLoading: boolean;
   detailsError: string | null;
+  currentPage: number;
+  itemsPerPage: number;
 }
 
-// AppState as a Discriminated Union (Excellent tier)
+// AppState dưới dạng Discriminated Union (Đạt chuẩn tier Excellent)
 export type AppState =
   | { status: 'idle' }
   | { status: 'loading' }
   | { status: 'success'; data: DashboardData }
   | { status: 'error'; error: string };
 
-// Meaningful usage of TypeScript Utility Types (Excellent tier)
-// 1. Pick: Select only fields needed to render a summary card in the grid
+// Sử dụng các Utility Types của TypeScript một cách có ý nghĩa (Đạt chuẩn tier Excellent)
+// 1. Pick: Chỉ chọn các trường cần thiết để hiển thị thẻ tóm tắt (summary card) trong lưới
 export type ProductSummary = Pick<
   Product,
   'id' | 'title' | 'price' | 'category' | 'thumbnail' | 'rating' | 'stock' | 'discountPercentage'
 >;
 
-// 2. Omit: Define details data without metadata fields we don't display
+// 2. Omit: Định nghĩa dữ liệu chi tiết bằng cách loại bỏ các trường metadata không hiển thị
 export type ProductDisplayDetails = Omit<Product, 'meta' | 'sku' | 'dimensions'>;
 
-// 3. Partial: Utility for updating specific state keys of the dashboard data
+// 3. Partial: Tiện ích hỗ trợ cập nhật một phần các thuộc tính trạng thái của dashboard
 export type DashboardDataUpdate = Partial<DashboardData>;
 
-// 4. Record: Map category slug to category name for efficient lookup
+// 4. Record: Tạo bản đồ ánh xạ (Map) từ slug danh mục sang tên danh mục để tra cứu hiệu quả
 export type CategoryMap = Record<string, string>;

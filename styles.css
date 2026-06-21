@@ -1,11 +1,11 @@
-/* DevDash Sleek Dark Glassmorphism Styling System */
+/* Hệ thống Định dạng Giao diện Kính mờ Tối màu Sleek cho DevDash */
 
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
 
 :root {
   --font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   
-  /* Color Palette */
+  /* Bảng màu sắc */
   --bg-primary: #0b0f19;
   --bg-secondary: #161f30;
   --accent-primary: #6366f1; /* Indigo */
@@ -19,7 +19,7 @@
   --glass-border: rgba(255, 255, 255, 0.08);
   --glass-shadow: rgba(0, 0, 0, 0.3);
   
-  /* Grid & Dimensions */
+  /* Hệ lưới & Kích thước */
   --radius-sm: 8px;
   --radius-md: 16px;
   --radius-lg: 24px;
@@ -27,7 +27,7 @@
   --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Global Reset */
+/* Thiết lập lại Toàn cục (Global Reset) */
 * {
   margin: 0;
   padding: 0;
@@ -46,14 +46,14 @@ body {
   background-attachment: fixed;
 }
 
-/* Container */
+/* Khung chứa chính (Container) */
 .dashboard-container {
   max-width: 1400px;
   margin: 0 auto;
   padding: 2rem 1.5rem;
 }
 
-/* Header Section */
+/* Phần Tiêu đề (Header) */
 header {
   display: flex;
   justify-content: space-between;
@@ -88,7 +88,7 @@ header {
   border: 1px solid rgba(99, 102, 241, 0.2);
 }
 
-/* Controls (Filters/Search) */
+/* Bộ Điều khiển (Bộ lọc & Tìm kiếm) */
 .controls-bar {
   display: flex;
   flex-direction: column;
@@ -201,7 +201,7 @@ header {
   border-color: var(--text-secondary);
 }
 
-/* Product Count Tag */
+/* Nhãn hiển thị số lượng kết quả */
 .results-count {
   font-size: 0.875rem;
   color: var(--text-secondary);
@@ -209,14 +209,14 @@ header {
   padding-left: 0.25rem;
 }
 
-/* Grid Layout */
+/* Bố cục lưới sản phẩm */
 .products-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 1.5rem;
 }
 
-/* Product Card */
+/* Thẻ hiển thị Sản phẩm */
 .product-card {
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
@@ -308,7 +308,7 @@ header {
 }
 
 .star-icon {
-  color: #fbbf24; /* Amber star */
+  color: #fbbf24; /* Biểu tượng sao màu vàng hổ phách */
   fill: #fbbf24;
 }
 
@@ -352,7 +352,7 @@ header {
   border: 1px solid rgba(16, 185, 129, 0.2);
 }
 
-/* States: Loading / Error / Empty */
+/* Các Trạng thái: Đang tải / Lỗi / Trống */
 .state-container {
   display: flex;
   flex-direction: column;
@@ -414,7 +414,7 @@ header {
   font-size: 1.1rem;
 }
 
-/* Loading Skeletons (Bonus Premium Element) */
+/* Hiệu ứng khung xương tải dữ liệu (Phần bổ sung cao cấp) */
 .skeleton-card {
   pointer-events: none;
 }
@@ -452,7 +452,7 @@ header {
   margin-bottom: 1rem;
 }
 
-/* Modal Styling (Detail View) */
+/* Định dạng giao diện Modal (Xem chi tiết) */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -658,7 +658,7 @@ header {
   color: var(--text-primary);
 }
 
-/* Reviews Section inside details */
+/* Phần hiển thị Đánh giá trong Modal chi tiết */
 .reviews-section {
   margin-top: 2rem;
   border-top: 1px solid var(--border-color);
@@ -707,7 +707,7 @@ header {
   line-height: 1.4;
 }
 
-/* Loading Detail State */
+/* Trạng thái đang tải chi tiết sản phẩm */
 .modal-loading-body {
   display: flex;
   flex-direction: column;
@@ -715,3 +715,93 @@ header {
   justify-content: center;
   padding: 5rem 2rem;
 }
+
+/* Bộ điều hướng phân trang (Pagination Controls) */
+.pagination-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1.5rem;
+  margin-top: 3rem;
+  padding: 0.75rem 1.25rem;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: var(--glass-shadow);
+  width: max-content;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.page-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.page-nav-btn svg {
+  transition: transform var(--transition-fast);
+}
+
+.page-nav-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--accent-primary);
+}
+
+.page-nav-btn:hover:not(:disabled) svg {
+  color: var(--accent-primary);
+}
+
+.page-nav-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.page-numbers-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.page-num-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-secondary);
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: var(--transition-fast);
+}
+
+.page-num-btn:hover:not(.active) {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+.page-num-btn.active {
+  background: var(--accent-primary);
+  color: white;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 12px rgba(99, 102, 241, 0.3);
+}
+

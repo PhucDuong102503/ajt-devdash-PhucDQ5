@@ -1,11 +1,11 @@
-// API fetching module using reusable generic helper
+// Module gọi API sử dụng hàm bổ trợ generic tái sử dụng
 import type { Product, Category, ProductResponse } from './types';
 
 const BASE_URL = 'https://dummyjson.com';
 
 /**
- * Reusable generic helper function to fetch and parse JSON data.
- * Checks for non-ok status codes and handles basic errors.
+ * Hàm bổ trợ generic tái sử dụng để tải (fetch) và phân tích (parse) dữ liệu JSON.
+ * Kiểm tra mã trạng thái phản hồi (response status) và xử lý các lỗi cơ bản.
  */
 export async function fetchJson<T>(url: string): Promise<T> {
   try {
@@ -24,28 +24,28 @@ export async function fetchJson<T>(url: string): Promise<T> {
 }
 
 /**
- * Fetches all products (limits to 100 for comprehensive local client-side sorting/filtering).
+ * Tải toàn bộ sản phẩm (giới hạn 100 mục để thực hiện lọc/sắp xếp cục bộ phía client).
  */
 export function fetchProducts(): Promise<ProductResponse> {
   return fetchJson<ProductResponse>(`${BASE_URL}/products?limit=100`);
 }
 
 /**
- * Fetches the list of product categories.
+ * Tải danh sách các danh mục sản phẩm.
  */
 export function fetchCategories(): Promise<Category[]> {
   return fetchJson<Category[]>(`${BASE_URL}/products/categories`);
 }
 
 /**
- * Searches for products matching the query text.
+ * Tìm kiếm sản phẩm khớp với từ khóa truy vấn.
  */
 export function searchProducts(query: string): Promise<ProductResponse> {
   return fetchJson<ProductResponse>(`${BASE_URL}/products/search?q=${encodeURIComponent(query)}`);
 }
 
 /**
- * Fetches details for a single product by ID.
+ * Tải chi tiết một sản phẩm bằng ID.
  */
 export function fetchProductById(id: number): Promise<Product> {
   return fetchJson<Product>(`${BASE_URL}/products/${id}`);
